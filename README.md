@@ -6,7 +6,7 @@ Looking for irregular TTL modifier middleboxes with help of Planetlab
 ## Usage
 
 In one terminal (with root privileges):
-```./ttlcheck <minttl> <diffttl> <interface>```
+```./ttlcheck <minttl> <diffttl> <interface or pcap file>```
 
 **Parameters:**
 

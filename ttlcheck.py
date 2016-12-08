@@ -9,11 +9,12 @@
 #
 from __future__ import with_statement
 from multiprocessing import Process, Manager, Lock
+import os.path
 import sys, socket
 import pcap, dpkt
 
 if len(sys.argv) != 4:
-	print "Usage: ./ttlcheck.py <ttl min> <ttl diff> <iface name>"
+	print "Usage: ./ttlcheck.py <ttl min> <ttl diff> <iface name or pcap file>"
 	exit(1);
 
 ttlmin = int(sys.argv[1])
@@ -51,24 +52,30 @@ def proc_ipttl(ip, ttlstr, ttlmin, ttldiff):
 	
 
 def packet_capture(dev, lock):
-	pc = pcap.pcap(dev)
-	pc.setfilter('icmp')
+	if os.path.isfile(dev):
+		pcapfile = open(dev)
+		pc = dpkt.pcap.Reader(pcapfile)
+	else:
+		pc = pcap.pcap(dev)
+		pc.setfilter('icmp')
 
 	for ts, pkt in pc:
 		eth = dpkt.ethernet.Ethernet(pkt)
-		ip = eth.data
- 		icmp = ip.data
-		if icmp.type == dpkt.icmp.ICMP_ECHO:
-			ipaddr = socket.inet_ntoa(ip.src)
-			# Cannot use set and other containers here because
-			# of a Python bug fixed in upcoming Python 3.6
-			with lock:
-				if not ipaddr in ttls:
-					ttls[ipaddr] = str(ip.ttl);
-				else:
-					tmpset = set(ttls[ipaddr].split())
-					tmpset.add(str(ip.ttl))
-					ttls[ipaddr] = " ".join(tmpset)
+		if eth.type == dpkt.ethernet.ETH_TYPE_IP:
+			ip = eth.data
+			if ip.p == dpkt.ip.IP_PROTO_ICMP:
+ 				icmp = ip.data
+				if icmp.type == dpkt.icmp.ICMP_ECHO:
+					ipaddr = socket.inet_ntoa(ip.src)
+					# Cannot use set and other containers here because
+					# of a Python bug fixed in upcoming Python 3.6
+					with lock:
+						if not ipaddr in ttls:
+							ttls[ipaddr] = str(ip.ttl);
+						else:
+							tmpset = set(ttls[ipaddr].split())
+							tmpset.add(str(ip.ttl))
+							ttls[ipaddr] = " ".join(tmpset)
 
 pktcap = Process(target=packet_capture, args=(dev,lock,))
 pktcap.start()
