@@ -30,8 +30,8 @@ IP address to ping
 File to save the results
 
 **After scanning finished**
-* **Type "write <filename>" into ttlcheck shell!**
-* **Type "quit" into ttlcheck shell!**
+* **Type ```write <filename>``` into ttlcheck shell!**
+* **Type ```quit``` into ttlcheck shell!**
 
 Filter the results:
 ```./filter.sh <ttlcheck_filename> <scan_filename> <result_filename>```
