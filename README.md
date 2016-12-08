@@ -1,6 +1,9 @@
 # ttlcheck
 Looking for irregular TTL modifier middleboxes with help of Planetlab
 
+** You need to fill ssh_needs folder with your ssh key for Planerlab
+and change slice_name in scan.py if necessary **
+
 ## Usage
 
 In one terminal (with root privileges):
